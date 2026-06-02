@@ -1,46 +1,47 @@
 # MTC Diabetes Analysis: Social Networks and Type 2 Diabetes (T2D)
 
-This repository contains R scripts for cleaning survey data and performing advanced statistical analyses. The project investigates the relationship between social network support programs and clinical/behavioral health outcomes for individuals living with Type 2 Diabetes (T2D).
+This repository contains the production-ready R analytics pipeline for processing raw clinical survey data, generating stratified baseline demographics, and executing advanced multivariate and causal inference modeling. 
+
+The repository evaluates the impact of structured social support network programs on behavioral, psychological, and physiological endpoints for patients managing Type 2 Diabetes (T2D).
 
 ---
 
-## Project Overview
+## Analytical Architecture
 
-The core objective of this research is to evaluate how participation in various support programs impacts health-related outcomes, self-efficacy, and self-care behaviors. The pipeline processes raw SPSS data, restructures demographic and clinical covariates, and executes a multi-stage statistical workflow:
+The workflow is engineered into four distinct sequential phases to ensure structural reproducibility and statistical rigor:
 
-1. **Descriptive Statistics:** Generates a baseline demographic characteristics table (`Table 1`) stratified by support program intensity using `gtsummary`.
-2. **MANCOVA Omnibus Test:** Evaluates global statistical differences across 8 health and behavioral outcome metrics simultaneously using a Type-III Multivariate ANOVA.
-3. **Hierarchical Linear Modeling:** Fits sequential linear regressions (Unadjusted $\rightarrow$ Demographic Adjusted $\rightarrow$ Fully Adjusted for Clinical Factors) across all 8 distinct clinical and psychological outcomes.
-4. **Causal Mediation Analysis:** Tests whether Diabetes Knowledge acts as a significant mediator between support program categories and final Self-Care Days.
-
----
-
-## Variables & Measures
-
-### Independent Variable
-* `program_category`: Level of support program participation, derived from cumulative tracking items (`None (0)`, `Single Program (1)`, `Multiple Programs (2+)`).
-
-### Covariates & Controls
-* **Demographics:** Age, Relationship Status (`relstatus_clean`), Education (`educ_clean`), Income Tier (`income_clean`), and Employment Status (`employ_clean`).
-* **Clinical Status:** Total years living with a T2D diagnosis (`T2Ddiagnosis_years`) and Total Chronic Comorbidities (`chronictot`).
-
-### Outcome Metrics
-The analysis evaluates 8 distinct primary and secondary endpoints:
-* `dcp2_t2doutcome_sum` (Diabetes Complications)
-* `DCP_spfc_2_tot` (Diabetes Impact)
-* `DCP_ltcbs_1_tot` (Health Beliefs)
-* `DCP_mbumps_2_tot` (Barriers to Care)
-* `DCP_mbumps_4_tot` (Diabetes Knowledge)
-* `sdsca1_average_days` (Self-Care Days)
-* `dses_tot` (Self-Efficacy)
-* `eHls_3_10_tot` (E-Health Literacy)
+1. **Data Normalization & Cleaning:** Imports raw SPSS data arrays, harmonizes sparse or high-cardinality categorical strings (e.g., income, education, and relationship tiers), constructs cumulative indices, and applies listwise complete-case constraints (`na.omit()`).
+2. **Stratified Descriptive Statistics:** Leverages `gtsummary` to build a publication-grade baseline characteristic matrix tracking demographic variance across program interaction levels.
+3. **Multivariate Analysis (MANCOVA):** Implements an omnibus Type-III Multivariate Analysis of Covariance via the `car` framework to concurrently evaluate structural group variance across 8 independent health/behavioral outcome vectors while controlling for clinical and demographic drift.
+4. **Hierarchical Regressions & Causal Mediation:** Executes sequential ordinary least squares (OLS) regressions (Unadjusted $\rightarrow$ Demographics $\rightarrow$ Fully Adjusted) across 8 distinct endpoints, paired with parametric causal mediation testing to determine the indirect effect of Diabetes Knowledge on downstream Self-Care Days.
 
 ---
 
-## Setup and Installation
+## Feature & Variable Dictionary
 
-### Dependencies
-To run this analysis, you must have **R (version 4.0 or higher)** installed. You can install all required packages directly from your CRAN console using the following command:
+### Exposure Measure
+* `program_category`: An ordinal factor tracking active intervention engagement based on multi-item tracking arrays, categorized as: `None (0)`, `Single Program (1)`, or `Multiple Programs (2+)`.
+
+### Confounding & Control Matrices
+* **Socio-Demographic Core:** Age, Relationship Status (`relstatus_clean`), Educational Attainment (`educ_clean`), Standardized Income Tier (`income_clean`), and Employment Status (`employ_clean`).
+* **Clinical Covariates:** Duration since initial diagnosis (`T2Ddiagnosis_years`) calculated relative to a standard baseline index, and a cumulative multi-morbidity burden index (`chronictot`).
+
+### Target Outcome Endpoints
+The pipeline evaluates 8 distinct primary and secondary clinical/behavioral endpoints:
+* `dcp2_t2doutcome_sum` (Total Diabetes Complications)
+* `DCP_spfc_2_tot` (Perceived Diabetes Impact)
+* `DCP_ltcbs_1_tot` (Health Belief Scales)
+* `DCP_mbumps_2_tot` (Structural Barriers to Care)
+* `DCP_mbumps_4_tot` (Objective Diabetes Knowledge)
+* `sdsca1_average_days` (Self-Care Behavior Days)
+* `dses_tot` (Diabetes Self-Efficacy Scale)
+* `eHls_3_10_tot` (Digital Health Literacy)
+
+---
+
+## Environment Requirements & Package Setup
+
+This pipeline is optimized for **R version 4.0.0 or higher**. Dependencies must be loaded from CRAN prior to executing the core analytics script:
 
 ```R
 install.packages(c("haven", "dplyr", "gtsummary", "car", "mediation"))
